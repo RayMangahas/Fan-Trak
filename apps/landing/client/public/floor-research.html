@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Fan-Trak Floor Research</title>
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #ffffff; --surface: #f9f9fb; --border: #dde1ea;
+      --text: #141520; --muted: #687080;
+      --magenta: #FF0080; --cyan: #00BFFF; --radius: 12px;
+      --font: 'Satoshi', system-ui, sans-serif;
+    }
+    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--font); -webkit-font-smoothing: antialiased; }
+    #app { min-height: 100dvh; display: flex; flex-direction: column; max-width: 480px; margin: 0 auto; padding: 20px 16px 32px; }
+    .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .logo { display: flex; align-items: center; gap: 8px; }
+    .logo-text { font-size: 15px; font-weight: 700; letter-spacing: 0.04em; }
+    .logo-fan { color: var(--magenta); } .logo-dash { color: var(--muted); } .logo-trak { color: var(--cyan); }
+    .q-counter { font-size: 12px; color: var(--muted); font-weight: 500; }
+    .progress-track { height: 3px; background: var(--border); border-radius: 999px; margin-bottom: 28px; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--magenta), var(--cyan)); transition: width 0.4s ease; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px 20px 20px; flex: 1; display: flex; flex-direction: column; }
+    .q-label { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--magenta); margin-bottom: 10px; }
+    .q-text { font-size: 20px; font-weight: 700; line-height: 1.35; margin-bottom: 6px; }
+    .q-sub { font-size: 15px; color: var(--muted); line-height: 1.5; margin-bottom: 22px; }
+    .chips, .multi-chips { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+    .chip { padding: 9px 16px; border-radius: 999px; border: 1.5px solid var(--border); background: transparent; color: var(--text); font-size: 16px; font-weight: 500; font-family: var(--font); cursor: pointer; transition: all 0.15s ease; -webkit-tap-highlight-color: transparent; }
+    .chip:active { transform: scale(0.96); }
+    .chip.selected { border-color: var(--magenta); background: rgba(255,0,128,0.12); color: #fff; }
+    .scale-row { display: flex; gap: 8px; margin-bottom: 8px; }
+    .scale-btn { flex: 1; aspect-ratio: 1; border-radius: 10px; border: 1.5px solid var(--border); background: transparent; color: var(--text); font-size: 17px; font-weight: 700; font-family: var(--font); cursor: pointer; transition: all 0.15s ease; -webkit-tap-highlight-color: transparent; }
+    .scale-btn:active { transform: scale(0.92); }
+    .scale-btn.selected { border-color: var(--magenta); background: rgba(255,0,128,0.15); color: var(--magenta); }
+    .scale-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-bottom: 20px; }
+    .ft-textarea { width: 100%; background: rgba(0,0,0,0.03); border: 1.5px solid var(--border); border-radius: 10px; color: var(--text); font-family: var(--font); font-size: 16px; line-height: 1.55; padding: 14px; resize: vertical; outline: none; transition: border-color 0.15s; margin-bottom: 20px; }
+    .ft-textarea:focus { border-color: var(--magenta); }
+    .ft-textarea::placeholder { color: var(--muted); }
+    .nav { display: flex; gap: 10px; margin-top: auto; padding-top: 16px; }
+    .btn-back { flex: 0 0 auto; padding: 14px 18px; border-radius: 10px; border: 1.5px solid var(--border); background: transparent; color: var(--muted); font-family: var(--font); font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+    .btn-back:hover { border-color: var(--muted); color: var(--text); }
+    .btn-next { flex: 1; padding: 14px; border-radius: 10px; border: none; background: linear-gradient(135deg, var(--magenta), var(--cyan)); color: #fff; font-family: var(--font); font-size: 15px; font-weight: 700; cursor: pointer; transition: opacity 0.15s, transform 0.1s; -webkit-tap-highlight-color: transparent; }
+    .btn-next:disabled { opacity: 0.35; cursor: not-allowed; }
+    .btn-next:not(:disabled):active { transform: scale(0.97); }
+    .done-screen { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 16px; padding: 20px; }
+    .done-icon { width: 72px; height: 72px; }
+    .done-title { font-size: 22px; font-weight: 700; }
+    .done-sub { font-size: 14px; color: var(--muted); line-height: 1.6; max-width: 300px; }
+    .done-resp-count { margin-top: 8px; font-size: 15px; color: var(--muted); }
+    .done-resp-count span { color: var(--cyan); font-weight: 700; }
+    .btn-restart { margin-top: 12px; padding: 13px 32px; border-radius: 999px; border: 1.5px solid var(--border); background: transparent; color: var(--text); font-family: var(--font); font-size: 14px; font-weight: 600; cursor: pointer; }
+    #responses-view { display: none; flex-direction: column; gap: 16px; }
+    .resp-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
+    .resp-meta { font-size: 11px; color: var(--muted); margin-bottom: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+    .resp-row { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+    .resp-q { font-size: 11px; color: var(--muted); }
+    .resp-a { font-size: 14px; color: var(--text); font-weight: 500; }
+    .tag { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; background: rgba(255,0,128,0.15); color: var(--magenta); margin: 2px; }
+    .back-btn { background: none; border: none; color: var(--muted); font-family: var(--font); font-size: 13px; cursor: pointer; text-align: center; display: block; margin-bottom: 16px; }
+    .fade { animation: fadeIn 0.2s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    .view-all-btn { background: none; border: none; color: var(--muted); font-family: var(--font); font-size: 12px; cursor: pointer; text-decoration: underline; }
+  
+    .ft-input { width: 100%; background: rgba(0,0,0,0.03); border: 1.5px solid var(--border); border-radius: 10px; color: var(--text); font-family: var(--font); font-size: 16px; line-height: 1.55; padding: 13px 14px; outline: none; transition: border-color 0.15s; margin-bottom: 12px; -webkit-appearance: none; }
+    .ft-input:focus { border-color: var(--magenta); }
+    .ft-input::placeholder { color: var(--muted); }
+    .ft-select { width: 100%; background: rgba(0,0,0,0.03); border: 1.5px solid var(--border); border-radius: 10px; color: var(--text); font-family: var(--font); font-size: 15px; padding: 13px 14px; outline: none; -webkit-appearance: none; margin-bottom: 12px; }
+    .ft-select:focus { border-color: var(--magenta); }
+    .info-section-label { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--cyan); margin-bottom: 14px; margin-top: 4px; }
+    .manager-block { display: none; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 12px; }
+    .manager-block.visible { display: block; }
+    .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    @media (max-width: 360px) { .input-row { grid-template-columns: 1fr; } }
+    .req { color: var(--magenta); }
+
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- PERSONAL INFO SCREEN (shown first) -->
+  <div id="personal-info-view">
+    <div class="header">
+      <div class="logo">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="11" cy="11" r="9.5" stroke="#FF0080" stroke-width="1.4"/>
+          <circle cx="11" cy="11" r="5.5" stroke="#00BFFF" stroke-width="1.4"/>
+          <circle cx="11" cy="11" r="2" fill="#FF0080"/>
+          <line x1="11" y1="1.5" x2="11" y2="5.5" stroke="#FF0080" stroke-width="1.4" stroke-linecap="round"/>
+          <line x1="11" y1="16.5" x2="11" y2="20.5" stroke="#00BFFF" stroke-width="1.4" stroke-linecap="round"/>
+          <line x1="1.5" y1="11" x2="5.5" y2="11" stroke="#00BFFF" stroke-width="1.4" stroke-linecap="round"/>
+          <line x1="16.5" y1="11" x2="20.5" y2="11" stroke="#FF0080" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+        <span class="logo-text"><span class="logo-fan">FAN</span><span class="logo-dash">-</span><span class="logo-trak">TRAK</span></span>
+      </div>
+      <span class="q-counter">Step 1 of 2</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" style="width:50%"></div>
+    </div>
+    <div class="card" style="overflow-y: auto;">
+      <div class="q-label">Your Information</div>
+      <div class="q-text">Tell us a bit about yourself</div>
+      <div class="q-sub">Required fields are marked <span class="req">*</span></div>
+
+      <div class="input-row">
+        <div>
+          <label style="font-size:11px;color:var(--muted);font-weight:600;display:block;margin-bottom:5px;">Full Name <span class="req">*</span></label>
+          <input class="ft-input" id="pi-full-name" type="text" placeholder="First & Last" />
+        </div>
+        <div>
+          <label style="font-size:11px;color:var(--muted);font-weight:600;display:block;margin-bottom:5px;">Stage / Creator Name</label>
+          <input class="ft-input" id="pi-stage-name" type="text" placeholder="@handle or alias" />
+        </div>
+      </div>
+
+      <label style="font-size:11px;color:var(--muted);font-weight:600;display:block;margin-bottom:5px;">Email Address <span class="req">*</span></label>
+      <input class="ft-input" id="pi-email" type="email" placeholder="your@email.com" />
+
+      <label style="font-size:11px;color:var(--muted);font-weight:600;display:block;margin-bottom:5px;">Creator Type <span class="req">*</span></label>
+      <select class="ft-select" id="pi-creator-type">
+        <option value="">Select type...</option>
+        <option>Hobby Creator</option>
+        <option>Part-Time Creator</option>
+        <option>Full-Time Creator</option>
+        <option>Agency / Manager</option>
+      </select>
+
+      <label style="font-size:11px;color:var(--muted);font-weight:600;display:block;margin-bottom:5px;">Do you have a Manager? <span class="req">*</span></label>
+      <select class="ft-select" id="pi-has-manager" onchange="toggleManagerBlock(this.value)">
+        <option value="">Select...</option>
+        <option value="Yes">Yes</option>
+        <option value="No">No</option>
+      </select>
+
+      <div class="manager-block" id="manager-block">
+        <div class="info-section-label">Manager / Company Details</div>
+        <label style="font-size:11px;color:var(--muted);font-weight:600;display:block;margin-bottom:5px;">Manager Name</label>
+        <input class="ft-input" id="pi-manager-name" type="text" placeholder="Manager's full name" style="margin-bottom:10px;" />
+        <div class="input-row">
+          <div>
+            <label style="font-size:11px;color:var(--muted);font-weight:600;display:block;margin-bottom:5px;">Company Name</label>
+            <input class="ft-input" id="pi-company-name" type="text" placeholder="Agency name" />
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--muted);font-weight:600;display:block;margin-bottom:5px;">Company Email</label>
+            <input class="ft-input" id="pi-company-email" type="email" placeholder="contact@agency.com" />
+          </div>
+        </div>
+      </div>
+
+      <div class="nav" style="margin-top: auto; padding-top: 16px;">
+        <button class="btn-next" id="pi-continue-btn" onclick="submitPersonalInfo()" disabled>Continue to Research</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SURVEY VIEW -->
+  <div id="survey-view" style="display:none;">
+    <div class="header">
+      <div class="logo">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="11" cy="11" r="9.5" stroke="#FF0080" stroke-width="1.4"/>
+          <circle cx="11" cy="11" r="5.5" stroke="#00BFFF" stroke-width="1.4"/>
+          <circle cx="11" cy="11" r="2" fill="#FF0080"/>
+          <line x1="11" y1="1.5" x2="11" y2="5.5" stroke="#FF0080" stroke-width="1.4" stroke-linecap="round"/>
+          <line x1="11" y1="16.5" x2="11" y2="20.5" stroke="#00BFFF" stroke-width="1.4" stroke-linecap="round"/>
+          <line x1="1.5" y1="11" x2="5.5" y2="11" stroke="#00BFFF" stroke-width="1.4" stroke-linecap="round"/>
+          <line x1="16.5" y1="11" x2="20.5" y2="11" stroke="#FF0080" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+        <span class="logo-text"><span class="logo-fan">FAN</span><span class="logo-dash">-</span><span class="logo-trak">TRAK</span></span>
+      </div>
+      <span class="q-counter" id="q-counter">Q1 of 7</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progress-bar" style="width:14.3%"></div>
+    </div>
+    <div class="card" id="question-card"></div>
+  </div>
+
+  <!-- DONE VIEW -->
+  <div id="done-view" style="display:none; flex:1; flex-direction:column;">
+    <div class="header">
+      <div class="logo">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="11" cy="11" r="9.5" stroke="#FF0080" stroke-width="1.4"/>
+          <circle cx="11" cy="11" r="5.5" stroke="#00BFFF" stroke-width="1.4"/>
+          <circle cx="11" cy="11" r="2" fill="#FF0080"/>
+          <line x1="11" y1="1.5" x2="11" y2="5.5" stroke="#FF0080" stroke-width="1.4" stroke-linecap="round"/>
+          <line x1="11" y1="16.5" x2="11" y2="20.5" stroke="#00BFFF" stroke-width="1.4" stroke-linecap="round"/>
+          <line x1="1.5" y1="11" x2="5.5" y2="11" stroke="#00BFFF" stroke-width="1.4" stroke-linecap="round"/>
+          <line x1="16.5" y1="11" x2="20.5" y2="11" stroke="#FF0080" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+        <span class="logo-text"><span class="logo-fan">FAN</span><span class="logo-dash">-</span><span class="logo-trak">TRAK</span></span>
+      </div>
+      <button class="view-all-btn" onclick="showResponses()">View All</button>
+    </div>
+    <div class="done-screen">
+      <svg class="done-icon" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="36" cy="36" r="34" stroke="#FF0080" stroke-width="1.5"/>
+        <circle cx="36" cy="36" r="20" stroke="#00BFFF" stroke-width="1.5"/>
+        <path d="M24 36l8 8 16-16" stroke="#FF0080" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div class="done-title">Response Saved</div>
+      <div class="done-sub">Thanks for the minute. This helps us build exactly what creators need.</div>
+      <div class="done-resp-count">Responses this session: <span id="resp-count">0</span></div>
+      <button class="btn-restart" onclick="restart()">New Response</button>
+    </div>
+  </div>
+
+  <!-- RESPONSES VIEW -->
+  <div id="responses-view">
+    <button class="back-btn" onclick="hideResponses()">Back</button>
+    <div id="responses-list"></div>
+  </div>
+</div>
+
+<script>
+var ALL_RESPONSES = [];
+
+// ── Personal Info ──────────────────────────────────────────────
+var PERSONAL_INFO = {};
+
+function toggleManagerBlock(val) {
+  var block = document.getElementById('manager-block');
+  if (val === 'Yes') block.classList.add('visible');
+  else block.classList.remove('visible');
+  validatePersonalInfo();
+}
+
+function validatePersonalInfo() {
+  var name = (document.getElementById('pi-full-name').value || '').trim();
+  var email = (document.getElementById('pi-email').value || '').trim();
+  var ctype = document.getElementById('pi-creator-type').value;
+  var mgr = document.getElementById('pi-has-manager').value;
+  var btn = document.getElementById('pi-continue-btn');
+  var valid = name && email && email.includes('@') && ctype && mgr;
+  btn.disabled = !valid;
+}
+
+// Live validation on all personal info inputs
+['pi-full-name','pi-email','pi-creator-type','pi-has-manager'].forEach(function(id) {
+  var el = document.getElementById(id);
+  if (el) el.addEventListener('input', validatePersonalInfo);
+  if (el) el.addEventListener('change', validatePersonalInfo);
+});
+
+function submitPersonalInfo() {
+  PERSONAL_INFO = {
+    fullName:    document.getElementById('pi-full-name').value.trim(),
+    stageName:   document.getElementById('pi-stage-name').value.trim(),
+    email:       document.getElementById('pi-email').value.trim(),
+    creatorType: document.getElementById('pi-creator-type').value,
+    hasManager:  document.getElementById('pi-has-manager').value,
+    managerName:  document.getElementById('pi-manager-name').value.trim(),
+    companyName:  document.getElementById('pi-company-name').value.trim(),
+    companyEmail: document.getElementById('pi-company-email').value.trim(),
+  };
+  document.getElementById('personal-info-view').style.display = 'none';
+  document.getElementById('survey-view').style.display = 'block';
+}
+
+
+
+var QUESTIONS = [
+  {
+    id: "platforms",
+    label: "Q1 - Platforms",
+    text: "Which platforms are you currently active on?",
+    sub: "Select all that apply.",
+    type: "multi",
+    options: ["OnlyFans", "Fansly", "Patreon", "ManyVids", "LoyalFans", "Fanvue", "Mynx", "Other"],
+    required: true
+  },
+  {
+    id: "hours",
+    label: "Q2 - Daily Time",
+    text: "How many hours a day do you spend managing your business?",
+    sub: "Include content creation, DMs, scheduling, and admin.",
+    type: "single",
+    options: ["Under 4 hrs", "4-8 hrs", "8-12 hrs", "12-16 hrs", "16+ hrs"],
+    required: true
+  },
+  {
+    id: "biggest_pain",
+    label: "Q3 - Biggest Pain",
+    text: "What is your single biggest operational headache right now?",
+    sub: "Pick the one that costs you the most time or money.",
+    type: "single",
+    options: [
+      "Chargebacks and payment holds",
+      "Managing multiple platforms",
+      "DM and fan communication volume",
+      "Tracking what is actually making money",
+      "Account bans or platform instability",
+      "Managing a team or agents",
+      "Other"
+    ],
+    required: true
+  },
+  {
+    id: "chargeback",
+    label: "Q4 - Payments",
+    text: "Have chargebacks or payment holds ever cost you significant income?",
+    sub: "We are trying to understand how widespread this is.",
+    type: "single",
+    options: [
+      "Yes - it is a serious problem",
+      "Yes - minor but annoying",
+      "Not yet but I worry about it",
+      "No, not an issue for me"
+    ],
+    required: true
+  },
+  {
+    id: "attribution",
+    label: "Q5 - Analytics",
+    text: "Can you tell which platform or post is actually driving your revenue?",
+    sub: "Knowing what converts to sales, not just what gets views.",
+    type: "single",
+    options: ["Yes, clearly", "Sort of - educated guess", "Not really", "No idea"],
+    required: true
+  },
+  {
+    id: "consolidation",
+    label: "Q6 - Value",
+    text: "If one tool handled your payouts, analytics, DMs, and scheduling - how valuable would that be?",
+    sub: "Rate 1 (not valuable) to 5 (would switch immediately).",
+    type: "scale",
+    min: 1,
+    max: 5,
+    minLabel: "Not valuable",
+    maxLabel: "Switch immediately",
+    required: true
+  },
+  {
+    id: "note",
+    label: "Q7 - Open",
+    text: "What is the one thing you wish platforms would fix that nobody has fixed yet?",
+    sub: "Be as specific as you want.",
+    type: "text",
+    placeholder: "e.g. I cannot see which post drove a new subscription...",
+    required: false
+  }
+];
+
+var currentQ = 0;
+var answers = {};
+
+function render() {
+  var q = QUESTIONS[currentQ];
+  var pct = ((currentQ + 1) / QUESTIONS.length) * 100;
+  document.getElementById("progress-bar").style.width = pct + "%";
+  document.getElementById("q-counter").textContent = "Q" + (currentQ + 1) + " of " + QUESTIONS.length;
+
+  var card = document.getElementById("question-card");
+  card.innerHTML = "";
+  card.className = "card fade";
+
+  var label = document.createElement("div");
+  label.className = "q-label";
+  label.textContent = q.label;
+
+  var title = document.createElement("div");
+  title.className = "q-text";
+  title.textContent = q.text;
+
+  var sub = document.createElement("div");
+  sub.className = "q-sub";
+  sub.textContent = q.sub;
+
+  card.appendChild(label);
+  card.appendChild(title);
+  card.appendChild(sub);
+
+  if (q.type === "single" || q.type === "multi") {
+    var chips = document.createElement("div");
+    chips.className = q.type === "multi" ? "multi-chips" : "chips";
+    for (var i = 0; i < q.options.length; i++) {
+      (function(opt) {
+        var btn = document.createElement("button");
+        btn.className = "chip" + (isSelected(q.id, opt) ? " selected" : "");
+        btn.textContent = opt;
+        btn.addEventListener("click", function() {
+          if (q.type === "single") {
+            answers[q.id] = opt;
+          } else {
+            var arr = answers[q.id] || [];
+            if (arr.indexOf(opt) >= 0) {
+              answers[q.id] = arr.filter(function(x) { return x !== opt; });
+            } else {
+              answers[q.id] = arr.concat([opt]);
+            }
+          }
+          render();
+        });
+        chips.appendChild(btn);
+      })(q.options[i]);
+    }
+    card.appendChild(chips);
+
+    // "Other" text box — shows when Other chip is selected
+    var otherTextId = q.id + "_other";
+    var hasOtherOption = q.options && q.options.indexOf("Other") >= 0;
+    if (hasOtherOption) {
+      var otherBox = document.createElement("textarea");
+      otherBox.className = "ft-textarea";
+      otherBox.rows = 3;
+      otherBox.placeholder = "Please tell us more...";
+      otherBox.value = answers[otherTextId] || "";
+      var otherSel = q.type === "single" ? answers[q.id] === "Other" : (answers[q.id] || []).indexOf("Other") >= 0;
+      otherBox.style.display = otherSel ? "block" : "none";
+      otherBox.style.marginTop = "10px";
+      otherBox.addEventListener("input", function() { answers[otherTextId] = otherBox.value; });
+      card.appendChild(otherBox);
+    }
+  }
+
+  if (q.type === "scale") {
+    var row = document.createElement("div");
+    row.className = "scale-row";
+    for (var n = q.min; n <= q.max; n++) {
+      (function(val) {
+        var btn = document.createElement("button");
+        btn.className = "scale-btn" + (answers[q.id] === val ? " selected" : "");
+        btn.textContent = val;
+        btn.addEventListener("click", function() { answers[q.id] = val; render(); });
+        row.appendChild(btn);
+      })(n);
+    }
+    var scaleLabels = document.createElement("div");
+    scaleLabels.className = "scale-labels";
+    scaleLabels.innerHTML = "<span>" + q.minLabel + "</span><span>" + q.maxLabel + "</span>";
+    card.appendChild(row);
+    card.appendChild(scaleLabels);
+  }
+
+  if (q.type === "text") {
+    var ta = document.createElement("textarea");
+    ta.className = "ft-textarea";
+    ta.rows = 4;
+    ta.placeholder = q.placeholder || "";
+    ta.value = answers[q.id] || "";
+    ta.addEventListener("input", function() { answers[q.id] = ta.value; });
+    card.appendChild(ta);
+  }
+
+  var nav = document.createElement("div");
+  nav.className = "nav";
+
+  if (currentQ > 0) {
+    var back = document.createElement("button");
+    back.className = "btn-back";
+    back.textContent = "Back";
+    back.addEventListener("click", function() { currentQ--; render(); });
+    nav.appendChild(back);
+  }
+
+  var next = document.createElement("button");
+  next.className = "btn-next";
+  var isLast = currentQ === QUESTIONS.length - 1;
+  next.textContent = isLast ? "Submit" : "Continue";
+  next.disabled = !canAdvance(q);
+  (function(last) {
+    next.addEventListener("click", function() {
+      if (last) { submitResponse(); } else { currentQ++; render(); }
+    });
+  })(isLast);
+  nav.appendChild(next);
+  card.appendChild(nav);
+}
+
+function isSelected(id, opt) {
+  var val = answers[id];
+  if (Array.isArray(val)) return val.indexOf(opt) >= 0;
+  return val === opt;
+}
+
+function canAdvance(q) {
+  if (!q.required) return true;
+  var val = answers[q.id];
+  if (q.type === "multi") return Array.isArray(val) && val.length > 0;
+  if (q.type === "text") return true;
+  return val !== undefined && val !== null && val !== "";
+}
+
+function submitResponse() {
+  var ts = new Date().toLocaleString("en-US", { timeZone: "America/Chicago" });
+  var entry = { timestamp: ts };
+  // Merge personal info first, then survey answers
+  for (var k in PERSONAL_INFO) { entry[k] = PERSONAL_INFO[k]; }
+  for (var k in answers) { entry[k] = answers[k]; }
+  ALL_RESPONSES.push(entry);
+
+  // Build "Other" detail text for biggest_pain if applicable
+  var biggestPain = entry.biggest_pain || "";
+  if (biggestPain === "Other" && entry.biggest_pain_other) {
+    biggestPain = "Other: " + entry.biggest_pain_other;
+  }
+
+  // Platforms: join array
+  var platformsVal = Array.isArray(entry.platforms) ? entry.platforms.join(", ") : (entry.platforms || "");
+  if (entry.platforms_other && (Array.isArray(entry.platforms) ? entry.platforms.indexOf("Other") >= 0 : entry.platforms === "Other")) {
+    platformsVal = platformsVal.replace("Other", "Other: " + entry.platforms_other);
+  }
+
+  // Push to Google Sheets via external-tool proxy
+  var row = {
+    "Timestamp":                  ts,
+    "Full Name":                  entry.fullName || "",
+    "Stage / Creator Name":       entry.stageName || "",
+    "Email":                      entry.email || "",
+    "Creator Type":               entry.creatorType || "",
+    "Has Manager":                entry.hasManager || "",
+    "Manager Name":               entry.managerName || "",
+    "Company Name":               entry.companyName || "",
+    "Company Email":              entry.companyEmail || "",
+    "Platforms":                  platformsVal,
+    "Hours Per Day":              entry.hours || "",
+    "Biggest Pain":               biggestPain,
+    "Chargebacks":                entry.chargeback || "",
+    "Revenue Attribution":        entry.attribution || "",
+    "Consolidation Value (1-5)": (entry.consolidation || "").toString(),
+    "Open Response":              entry.note || ""
+  };
+
+  // POST to landing page research endpoint to record in Google Sheets
+  var payload = {
+    fullName: row["Full Name"],
+    stageName: row["Stage / Creator Name"],
+    researchEmail: row["Email"],
+    creatorType: row["Creator Type"],
+    hasManager: row["Has Manager"],
+    managerName: row["Manager Name"],
+    companyName: row["Company Name"],
+    companyEmail: row["Company Email"],
+    platforms: row["Platforms"],
+    hoursPerDay: row["Hours Per Day"],
+    biggestPain: row["Biggest Pain"],
+    chargeback: row["Chargebacks"],
+    attribution: row["Revenue Attribution"],
+    consolidationValue: parseInt(row["Consolidation Value (1-5)"]) || null,
+    openResponse: row["Open Response"]
+  };
+  fetch("/api/research", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  }).catch(function(err) { console.warn("[sheets] write failed", err); });
+
+  document.getElementById("survey-view").style.display = "none";
+  var doneEl = document.getElementById("done-view");
+  doneEl.style.display = "flex";
+  document.getElementById("resp-count").textContent = ALL_RESPONSES.length;
+}
+
+function restart() {
+  answers = {};
+  currentQ = 0;
+  document.getElementById("done-view").style.display = "none";
+  document.getElementById("survey-view").style.display = "block";
+  render();
+}
+
+function showResponses() {
+  document.getElementById("done-view").style.display = "none";
+  var rv = document.getElementById("responses-view");
+  rv.style.display = "flex";
+  rv.style.flexDirection = "column";
+
+  var list = document.getElementById("responses-list");
+  list.innerHTML = "";
+
+  if (ALL_RESPONSES.length === 0) {
+    list.innerHTML = "<p style='color:var(--muted);text-align:center;padding:40px 0;font-size:14px;'>No responses yet.</p>";
+    return;
+  }
+
+  var reversed = ALL_RESPONSES.slice().reverse();
+  for (var i = 0; i < reversed.length; i++) {
+    var r = reversed[i];
+    var num = ALL_RESPONSES.length - i;
+    var c = document.createElement("div");
+    c.className = "resp-card";
+
+    var platforms = Array.isArray(r.platforms) ? r.platforms.join(", ") : (r.platforms || "-");
+
+    c.innerHTML =
+      "<div class='resp-meta'>Response #" + num + " &nbsp;|&nbsp; " + r.timestamp + "</div>" +
+      "<div class='resp-row'><span class='resp-q'>Platforms</span><span class='resp-a'>" + platforms + "</span></div>" +
+      "<div class='resp-row'><span class='resp-q'>Hours / day</span><span class='resp-a'>" + (r.hours || "-") + "</span></div>" +
+      "<div class='resp-row'><span class='resp-q'>Biggest pain</span><span class='resp-a'>" + (r.biggest_pain || "-") + "</span></div>" +
+      "<div class='resp-row'><span class='resp-q'>Chargebacks</span><span class='resp-a'>" + (r.chargeback || "-") + "</span></div>" +
+      "<div class='resp-row'><span class='resp-q'>Revenue attribution</span><span class='resp-a'>" + (r.attribution || "-") + "</span></div>" +
+      "<div class='resp-row'><span class='resp-q'>Consolidation value</span><span class='resp-a' style='color:var(--magenta);font-weight:700;'>" + (r.consolidation || "-") + " / 5</span></div>" +
+      (r.note ? "<div class='resp-row'><span class='resp-q'>Open response</span><span class='resp-a' style='font-style:italic;'>" + r.note + "</span></div>" : "");
+
+    list.appendChild(c);
+  }
+}
+
+function hideResponses() {
+  document.getElementById("responses-view").style.display = "none";
+  document.getElementById("done-view").style.display = "flex";
+}
+
+render();
+</script>
+</body>
+</html>

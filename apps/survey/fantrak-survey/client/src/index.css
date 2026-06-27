@@ -1,0 +1,83 @@
+@import url('https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Fan-Trak brand: dark navy surfaces, magenta + cyan accents */
+  --background: 232 35% 7%;
+  --foreground: 220 20% 92%;
+
+  --card: 232 30% 10%;
+  --card-foreground: 220 20% 92%;
+
+  --popover: 232 30% 10%;
+  --popover-foreground: 220 20% 92%;
+
+  --primary: 326 100% 50%;       /* magenta #FF0080 */
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 197 100% 50%;     /* cyan #00BFFF */
+  --secondary-foreground: 232 35% 7%;
+
+  --muted: 232 25% 16%;
+  --muted-foreground: 220 15% 55%;
+
+  --accent: 232 25% 18%;
+  --accent-foreground: 220 20% 92%;
+
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+
+  --border: 232 25% 18%;
+  --input: 232 25% 16%;
+  --ring: 326 100% 50%;
+
+  --radius: 0.5rem;
+
+  --font-body: 'Satoshi', system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: var(--font-body);
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Star rating */
+.star-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  transition: transform 0.1s ease;
+}
+.star-btn:hover { transform: scale(1.15); }
+
+/* Progress bar fill */
+.progress-fill {
+  background: linear-gradient(90deg, hsl(326 100% 50%), hsl(197 100% 50%));
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.4s ease;
+}
+
+/* Section separator */
+.section-sep {
+  border: none;
+  border-top: 1px solid hsl(var(--border));
+  margin: 1.75rem 0;
+}
+
+/* Gradient text */
+.grad-text {
+  background: linear-gradient(90deg, hsl(326 100% 50%), hsl(197 100% 50%));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}

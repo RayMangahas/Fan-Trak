@@ -1,0 +1,213 @@
+@import url('https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700,900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background:           232 35% 6%;
+  --foreground:           220 20% 92%;
+  --card:                 232 30% 10%;
+  --card-foreground:      220 20% 92%;
+  --popover:              232 30% 10%;
+  --popover-foreground:   220 20% 92%;
+  --primary:              326 100% 50%;
+  --primary-foreground:   0 0% 100%;
+  --secondary:            197 100% 50%;
+  --secondary-foreground: 232 35% 6%;
+  --muted:                232 25% 16%;
+  --muted-foreground:     220 15% 50%;
+  --accent:               232 25% 18%;
+  --accent-foreground:    220 20% 92%;
+  --destructive:          0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+  --border:               232 25% 18%;
+  --input:                232 25% 14%;
+  --ring:                 326 100% 50%;
+  --radius:               0.625rem;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Satoshi', system-ui, sans-serif;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* ── Gradient utilities ── */
+.grad-text {
+  background: linear-gradient(90deg, #FF0080, #00BFFF);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.grad-bg {
+  background: linear-gradient(135deg, #FF0080, #00BFFF);
+}
+.grad-border {
+  border-image: linear-gradient(135deg, #FF0080, #00BFFF) 1;
+}
+
+/* ── Glow effect ── */
+.glow-m { box-shadow: 0 0 40px rgba(255,0,128,0.18); }
+.glow-c { box-shadow: 0 0 40px rgba(0,191,255,0.15); }
+
+/* ── Section separators ── */
+.section-line {
+  border: none;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, hsl(var(--border)), transparent);
+  margin: 0;
+}
+
+/* ── Chip / badge ── */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1.5px solid hsl(var(--border));
+  background: transparent;
+  color: hsl(var(--foreground));
+  font-size: 13px;
+  font-weight: 500;
+  font-family: 'Satoshi', system-ui, sans-serif;
+  cursor: pointer;
+  transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  white-space: nowrap;
+}
+.chip:active { transform: scale(0.96); }
+.chip.selected {
+  border-color: #FF0080;
+  background: rgba(255,0,128,0.12);
+  color: #fff;
+}
+
+/* ── Form inputs ── */
+.ft-input {
+  width: 100%;
+  background: hsl(var(--input));
+  border: 1.5px solid hsl(var(--border));
+  border-radius: 10px;
+  color: hsl(var(--foreground));
+  font-family: 'Satoshi', system-ui, sans-serif;
+  font-size: 15px;
+  padding: 14px 16px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.ft-input:focus { border-color: #FF0080; }
+.ft-input::placeholder { color: hsl(var(--muted-foreground)); }
+
+/* ── Buttons ── */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 28px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, #FF0080, #00BFFF);
+  color: #fff;
+  font-family: 'Satoshi', system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-primary:not(:disabled):hover { opacity: 0.9; }
+.btn-primary:not(:disabled):active { transform: scale(0.97); }
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 20px;
+  border-radius: 10px;
+  border: 1.5px solid hsl(var(--border));
+  background: transparent;
+  color: hsl(var(--muted-foreground));
+  font-family: 'Satoshi', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-ghost:hover { border-color: hsl(var(--muted-foreground)); color: hsl(var(--foreground)); }
+
+/* ── Scale buttons ── */
+.scale-btn {
+  flex: 1;
+  aspect-ratio: 1;
+  border-radius: 10px;
+  border: 1.5px solid hsl(var(--border));
+  background: transparent;
+  color: hsl(var(--foreground));
+  font-size: 15px;
+  font-weight: 700;
+  font-family: 'Satoshi', system-ui, sans-serif;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.scale-btn.selected {
+  border-color: #FF0080;
+  background: rgba(255,0,128,0.15);
+  color: #FF0080;
+}
+
+/* ── Progress bar ── */
+.progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #FF0080, #00BFFF);
+  transition: width 0.4s ease;
+}
+
+/* ── Textarea ── */
+.ft-textarea {
+  width: 100%;
+  background: hsl(var(--input));
+  border: 1.5px solid hsl(var(--border));
+  border-radius: 10px;
+  color: hsl(var(--foreground));
+  font-family: 'Satoshi', system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  padding: 14px;
+  resize: none;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.ft-textarea:focus { border-color: #FF0080; }
+.ft-textarea::placeholder { color: hsl(var(--muted-foreground)); }
+
+/* ── Success state ── */
+.success-bounce {
+  animation: bounceIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes bounceIn {
+  from { opacity: 0; transform: scale(0.7); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* ── Fade in ── */
+.fade-in { animation: fadeIn 0.25s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* ── Grid background ── */
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(255,0,128,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,0,128,0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
